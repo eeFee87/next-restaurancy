@@ -122,7 +122,8 @@ const restaurants: Restaurant[] = [
   },
 ];
 
-const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+// const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
 // https://docs.google.com/spreadsheets/d/e/2PACX-1vTdmdk9sFpkzgteEWNzZnxzKBbLlHmT7FStLB-7ahWwdxBOrbWPjj2DdQZTQIRF5h4RRzjQ9yhy7VH1/pub?output=csv
 const api = {
   list: async (): Promise<Restaurant[]> => {
@@ -152,8 +153,24 @@ const api = {
     return restaurants;
   },
   fetch: async (id: Restaurant["id"]): Promise<Restaurant> => {
-    await sleep(750);
+    const [, ...data] = await fetch(
+      "https://docs.google.com/spreadsheets/d/e/2PACX-1vTdmdk9sFpkzgteEWNzZnxzKBbLlHmT7FStLB-7ahWwdxBOrbWPjj2DdQZTQIRF5h4RRzjQ9yhy7VH1/pub?output=csv",
+    )
+      .then((res) => res.text())
+      .then((text) => text.split("\n"));
+    const restaurants: Restaurant[] = data.map((row) => {
+      const [id, name, description, address, score, ratings, image] = row.split(",");
 
+      return {
+        id,
+        name,
+        description,
+        address,
+        score: Number(score),
+        ratings: Number(ratings),
+        image,
+      };
+    });
     const restaurant = restaurants.find((restaurant) => restaurant.id === id);
 
     if (!restaurant) {
